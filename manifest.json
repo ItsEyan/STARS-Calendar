@@ -1,0 +1,12 @@
+{
+	"action": {
+		"default_popup": "index.html",
+		"default_title": "STARSCal",
+		"default_icon": "icons/STARSCalLogo.png"
+	},
+	"description": "Export your STARS timetable to your favorite calendar app!",
+	"manifest_version": 3,
+	"name": "STARSCal",
+	"permissions": ["activeTab", "scripting"],
+	"version": "1.0.0"
+}

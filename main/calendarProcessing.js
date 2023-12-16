@@ -59,7 +59,7 @@ Date.prototype.addDays = function (days) {
 };
 
 for (var i = 0; i < classStartDates.length; i++) {
-	if (classStartDates[i].getTime() > Date.now()) {
+	if (classEndDates[i].getTime() > Date.now()) {
 		currentStartDate = classStartDates[i];
 		currentEndDate = classEndDates[i];
 		break;

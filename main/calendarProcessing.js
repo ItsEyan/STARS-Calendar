@@ -18,6 +18,9 @@ var test =
 	'PRODID:-//Test Cal//EN\n' +
 	'VERSION:2.0\n';
 var courses = [];
+var selectedCourses = [];
+var intialized = false;
+var expanded = false;
 var elems;
 var data = [];
 var parser = new DOMParser();
@@ -38,7 +41,7 @@ const monthMap = {
 	Dec: '12',
 };
 
-function formatDateToICS(date) {
+function formatDateToICS(date, allDay = false) {
 	const year = date.getFullYear();
 	const month = (date.getMonth() + 1).toString().padStart(2, '0');
 	const day = date.getDate().toString().padStart(2, '0');
@@ -46,6 +49,7 @@ function formatDateToICS(date) {
 	const minutes = date.getMinutes().toString().padStart(2, '0');
 	const seconds = date.getSeconds().toString().padStart(2, '0');
 
+	if (allDay) return `${year}${month}${day}`;
 	return `${year}${month}${day}T${hours}${minutes}${seconds}`;
 }
 
@@ -115,6 +119,80 @@ document.addEventListener('DOMContentLoaded', function () {
 	});
 
 	document
+		.getElementById('expand_btn')
+		.addEventListener('click', async function () {
+			await chrome.scripting.executeScript(
+				{
+					target: {
+						tabId: tabid,
+						allFrames: true,
+					},
+					function: modifyDOM,
+				},
+				(results) => {
+					try {
+						page_content = results[0].result.innerHTML;
+						pageLink = results[0].result.pageLink;
+						if (
+							pageLink !=
+							'https://wish.wis.ntu.edu.sg/pls/webexe/AUS_STARS_PLANNER.planner'
+						) {
+							document.getElementById('updateText').innerHTML =
+								'Oops! Wrong Site! &#128561;';
+						} else {
+							if (expanded) {
+								document.getElementById('course_select').style.display = 'none';
+								document.getElementById('expand_icon').className =
+									'fa fa-chevron-right';
+								expanded = false;
+							} else {
+								document.getElementById('course_select').style.display =
+									'block';
+								document.getElementById('expand_icon').className =
+									'fa fa-chevron-left';
+								expanded = true;
+							}
+							if (intialized) return;
+							if (courses.length == 0) {
+								populateCourses();
+								selectedCourses = [...courses];
+							}
+							if (courses.length == 0) {
+								document.getElementById('updateText').innerHTML =
+									'Oops! No courses found! &#128557;';
+								return;
+							}
+
+							let table = document.getElementById('course_select_table');
+							courses.forEach((course) => {
+								let row = table.insertRow(-1);
+								let selectCell = row.insertCell(0);
+								let courseCell = row.insertCell(1);
+
+								selectCell.innerHTML = `<input type="checkbox" id="${course.code}_checkbox" checked>`;
+								selectCell.className = 'center';
+								courseCell.innerHTML = `${course.code}: ${course.title}`;
+								selectCell.addEventListener('click', function () {
+									if (this.firstChild.checked) {
+										selectedCourses.push(course);
+									} else {
+										selectedCourses = selectedCourses.filter(
+											(selectedCourse) => selectedCourse.code !== course.code
+										);
+									}
+								});
+							});
+							intialized = true;
+						}
+					} catch (err) {
+						document.getElementById('updateText').innerHTML =
+							'Oops! Wrong Site! &#128561;';
+					}
+				}
+			);
+		});
+
+	document
 		.getElementById('generateButton')
 		.addEventListener('click', async function () {
 			await chrome.scripting.executeScript(
@@ -139,7 +217,16 @@ document.addEventListener('DOMContentLoaded', function () {
 							document.getElementById('updateText').innerHTML =
 								'Be sure to share with your friends! &#128521';
 						}
-						populateCourses();
+						if (courses.length == 0) {
+							populateCourses();
+							selectedCourses = [...courses];
+						}
+						if (courses.length == 0) {
+							document.getElementById('updateText').innerHTML =
+								'Oops! No courses found! &#128557;';
+							return;
+						}
+						readSchedule();
 					} catch (err) {
 						document.getElementById('updateText').innerHTML =
 							'Oops! Wrong Site! &#128561;';
@@ -150,48 +237,58 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function populateCourses() {
-	var tmp = [];
+	var tmp;
 	doc = parser.parseFromString(page_content, 'text/html');
 	elems = doc.getElementsByTagName('table');
 
 	for (var i = 0; i < elems.length; i++) {
 		if (elems[i].getAttribute('cellspacing') == '0') {
-			tmp.push(elems[i].innerHTML);
+			tmp = elems[i].innerHTML;
+			break;
 		}
 	}
 
 	courses = [];
-	elements = parser.parseFromString(tmp[0], 'text/html');
+	elements = parser.parseFromString(tmp, 'text/html');
 	data = elements.body.innerText.split('\n').filter((n) => n);
-	for (var i = 6; i < data.length - 3; i += 6) {
+	for (var i = 7; i < data.length - 3; i += 6) {
 		var index = data[i];
 		var code = data[i + 1];
 		var title = data[i + 2];
 		var au = data[i + 3];
+		var examTiming;
 
-		var time = data[i + 5].replace('hrs', '').trim().split(' ');
-		var date = time[0].split('-');
-		var dateString = date[2] + '-' + monthMap[date[1]] + '-' + date[0];
-		var timeSplit = time[1].split('to');
-		var startTime =
-			timeSplit[0].substring(0, timeSplit[0].length - 2) +
-			':' +
-			timeSplit[0].substring(timeSplit[0].length - 2);
-		var endTime =
-			timeSplit[1].substring(0, timeSplit[1].length - 2) +
-			':' +
-			timeSplit[1].substring(timeSplit[1].length - 2);
+		if (data[i + 5] === 'Not Applicable') examTiming = ['Not Applicable'];
+		else {
+			var time = data[i + 5].replace('hrs', '').trim().split(' ');
+			var date = time[0].split('-');
+			var dateString = date[2] + '-' + monthMap[date[1]] + '-' + date[0];
+			var timeSplit = time[1].split('to');
+			var startTime =
+				timeSplit[0].substring(0, timeSplit[0].length - 2) +
+				':' +
+				timeSplit[0].substring(timeSplit[0].length - 2);
+			var endTime =
+				timeSplit[1].substring(0, timeSplit[1].length - 2) +
+				':' +
+				timeSplit[1].substring(timeSplit[1].length - 2);
 
-		var examTiming = [
-			new Date(Date.parse(dateString + 'T' + startTime)),
-			new Date(Date.parse(dateString + 'T' + endTime)),
-		];
+			examTiming = [
+				new Date(Date.parse(dateString + 'T' + startTime)),
+				new Date(Date.parse(dateString + 'T' + endTime)),
+			];
+		}
 		courses.push(new Course(index, code, title, au, examTiming));
 	}
-	readSchedule();
 }
 
 function readSchedule() {
+	if (selectedCourses.length == 0) {
+		document.getElementById('updateText').innerHTML =
+			'You have not selected any courses! &#128557;';
+		return;
+	}
+
 	var scheduleTable = doc.getElementsByTagName('table');
 	let order = sortable.toArray();
 
@@ -216,6 +313,8 @@ function readSchedule() {
 				for (var k = 0; k < modList.length; k++) {
 					var courseData = modList[k].split(' ');
 					var courseCode = courseData[0];
+					if (selectedCourses.find((x) => x.code == courseCode) == undefined)
+						continue;
 					var classType = courseData[1];
 					var tutGroup = courseData[2];
 					var courseFreq = 'weekly_1_13';
@@ -359,9 +458,9 @@ function readSchedule() {
 			}
 		}
 	}
-	for (var i = 0; i < courses.length; i++) {
-		var course = courses[i];
+	selectedCourses.forEach((course) => {
 		var exam = course.exam;
+		if (exam[0] === 'Not Applicable') return;
 		test += 'BEGIN:VEVENT\n';
 		test += 'SUMMARY:' + course.code + ' Finals\n';
 		test += 'DTSTART:' + formatDateToICS(exam[0]) + '\n';
@@ -383,13 +482,16 @@ function readSchedule() {
 		test += 'END:VALARM\n';
 		test += 'UID:' + course.code + 'Exam' + formatDateToICS(exam[0]) + '\n';
 		test += 'END:VEVENT\n';
-	}
+	});
 
 	test += 'BEGIN:VEVENT\n';
 	test += 'SUMMARY:' + 'Recess Week\n';
-	test += 'DTSTART:' + formatDateToICS(currentStartDate.addDays(7 * 7)) + '\n';
 	test +=
-		'DTEND:' + formatDateToICS(currentStartDate.addDays(7 * 8 - 2)) + '\n';
+		'DTSTART:' + formatDateToICS(currentStartDate.addDays(7 * 7), true) + '\n';
+	test +=
+		'DTEND:' +
+		formatDateToICS(currentStartDate.addDays(7 * 8 - 2), true) +
+		'\n';
 	test += 'DTSTAMP:' + formatDateToICS(new Date()) + '\n';
 	test += 'DESCRIPTION:ITS RECESS WEEK!!!!!\n';
 	test += 'LOCATION:GO HOME\n';

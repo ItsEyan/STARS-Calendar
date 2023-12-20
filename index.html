@@ -4,70 +4,95 @@
 		<link rel="stylesheet" href="styles/styles.css" />
 		<title>generateNTU</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<link
+			rel="stylesheet"
+			href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
 		<script src="Sortable.min.js"></script>
 		<script src="main/calendarProcessing.js"></script>
 	</head>
 	<body>
-		<div class="container">
-			<div class="header">
-				<h1>STARS Calendar</h1>
-				<p>Drag the elements to format each calendar event title</p>
-			</div>
-			<div class="list_container">
-				<ul id="title-components">
-					<li class="title-components" data-id="courseCode">
-						<div class="title-component-name">
-							<h1>Course Code</h1>
-						</div>
-					</li>
-					<li class="title-components" data-id="classType">
-						<div class="title-component-name">
-							<h1>Class Type</h1>
-						</div>
-					</li>
-					<li class="title-components" data-id="tutorialGroup">
-						<div class="title-component-name">
-							<h1>Tutorial Group</h1>
-						</div>
-					</li>
-				</ul>
-				<p class="example">
-					<span>e.g</span>
-					<span id="courseCode">SC3000</span>
-					<span id="classType">LEC/STU</span>
-					<span id="tutorialGroup">SCLA</span>
-				</p>
-			</div>
-			<div class="subheader">
-				<h2>Include in description:</h1>
-			</div>
-			<div class="checklist">
-				<div class="checklist-item">
-					<input type="checkbox" id="courseName" name="courseName" checked />
-					<label for="courseName"> Course Name</label><br />
+		<div class="row">
+			<div class="container">
+				<div class="header">
+					<h1>STARS Calendar</h1>
+					<p>Drag the elements to format each calendar event title</p>
 				</div>
-				<div class="checklist-item">
-					<input type="checkbox" id="au" name="au" checked />
-					<label for="au"> AUs</label><br />
+				<div class="list_container">
+					<ul id="title-components">
+						<li class="title-components" data-id="courseCode">
+							<div class="title-component-name">
+								<h1>Course Code</h1>
+							</div>
+						</li>
+						<li class="title-components" data-id="classType">
+							<div class="title-component-name">
+								<h1>Class Type</h1>
+							</div>
+						</li>
+						<li class="title-components" data-id="tutorialGroup">
+							<div class="title-component-name">
+								<h1>Tutorial Group</h1>
+							</div>
+						</li>
+					</ul>
+					<p class="example">
+						<span>e.g</span>
+						<span id="courseCode">SC3000</span>
+						<span id="classType">LEC/STU</span>
+						<span id="tutorialGroup">SCLA</span>
+					</p>
 				</div>
-				<div class="checklist-item">
-					<input type="checkbox" id="index" name="index" checked />
-					<label for="index"> Index</label><br />
+				<div class="subheader">
+					<h2>Include in description:</h2>
+					<div id="expand">
+						<button class="btn" id="expand_btn">
+							<i
+								id="expand_icon"
+								class="fa fa-chevron-right"
+								aria-hidden="true"></i>
+						</button>
+					</div>
 				</div>
-				<div class="checklist-item">
-					<input type="checkbox" id="schedule" name="schedule" checked />
-					<label for="schedule"> Schedule</label><br />
+				<div class="checklist">
+					<div class="checklist-item">
+						<input type="checkbox" id="courseName" name="courseName" checked />
+						<label for="courseName"> Course Name</label><br />
+					</div>
+					<div class="checklist-item">
+						<input type="checkbox" id="au" name="au" checked />
+						<label for="au"> AUs</label><br />
+					</div>
+					<div class="checklist-item">
+						<input type="checkbox" id="index" name="index" checked />
+						<label for="index"> Index</label><br />
+					</div>
+					<div class="checklist-item">
+						<input type="checkbox" id="schedule" name="schedule" checked />
+						<label for="schedule"> Schedule</label><br />
+					</div>
+				</div>
+				<button id="generateButton" class="custom_button" role="button">
+					Generate
+				</button>
+				<p id="updateText"></p>
+				<button id="helpButton" class="btn" style="padding: 12px 16px">
+					<i class="fa fa-question-circle" aria-hidden="true"></i>
+				</button>
+				<div id="helpText">
+					<p>1. Navigate to STARS timetable -> Printable Page</p>
+					<p>2. Customize your calendar and click 'Generate'</p>
 				</div>
 			</div>
-			<button id="generateButton" class="custom_button" role="button">
-				Generate
-			</button>
-			<p id="updateText"></p>
-			<button id="helpButton" class="btn"><i class="fa fa-question-circle" aria-hidden="true"></i></button>
-			<div id="helpText">
-				<p>1. Navigate to STARS timetable -> Printable Page</p>
-				<p>2. Customize your calendar and click 'Generate'</p>
+			<div id="course_select">
+				<table class="styled-table">
+					<thead>
+						<tr>
+							<th class="center">Include</th>
+							<th class="center">Course</th>
+						</tr>
+					</thead>
+					<tbody id="course_select_table"></tbody>
+				</table>
 			</div>
 		</div>
 	</body>

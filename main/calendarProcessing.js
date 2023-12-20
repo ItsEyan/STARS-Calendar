@@ -140,6 +140,18 @@ document.addEventListener('DOMContentLoaded', function () {
 							document.getElementById('updateText').innerHTML =
 								'Oops! Wrong Site! &#128561;';
 						} else {
+							$('[id="start_date"]').datepicker({
+								date: currentStartDate,
+								format: 'dd/mm/yyyy',
+							});
+							$('[id="start_date"]').datepicker('setDate', currentStartDate);
+
+							$('[id="end_date"]').datepicker({
+								date: currentEndDate,
+								format: 'dd/mm/yyyy',
+							});
+							$('[id="end_date"]').datepicker('setDate', currentEndDate);
+
 							if (expanded) {
 								document.getElementById('course_select').style.display = 'none';
 								document.getElementById('expand_icon').className =
@@ -288,6 +300,8 @@ function readSchedule() {
 			'You have not selected any courses! &#128557;';
 		return;
 	}
+	currentStartDate = $('[id="start_date"]').datepicker('getDate');
+	currentEndDate = $('[id="end_date"]').datepicker('getDate');
 
 	var scheduleTable = doc.getElementsByTagName('table');
 	let order = sortable.toArray();

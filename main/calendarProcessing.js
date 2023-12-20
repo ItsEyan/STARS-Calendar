@@ -149,8 +149,19 @@ document.addEventListener('DOMContentLoaded', function () {
 							$('[id="end_date"]').datepicker({
 								date: currentEndDate,
 								format: 'dd/mm/yyyy',
+								startDate: currentStartDate,
 							});
 							$('[id="end_date"]').datepicker('setDate', currentEndDate);
+
+							if (courses.length == 0) {
+								populateCourses();
+								selectedCourses = [...courses];
+							}
+							if (courses.length == 0) {
+								document.getElementById('updateText').innerHTML =
+									'Oops! No courses found! &#128557;';
+								return;
+							}
 
 							if (expanded) {
 								document.getElementById('course_select').style.display = 'none';
@@ -165,15 +176,6 @@ document.addEventListener('DOMContentLoaded', function () {
 								expanded = true;
 							}
 							if (intialized) return;
-							if (courses.length == 0) {
-								populateCourses();
-								selectedCourses = [...courses];
-							}
-							if (courses.length == 0) {
-								document.getElementById('updateText').innerHTML =
-									'Oops! No courses found! &#128557;';
-								return;
-							}
 
 							let table = document.getElementById('course_select_table');
 							courses.forEach((course) => {

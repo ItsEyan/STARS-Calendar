@@ -29,7 +29,14 @@ This extension requires the following permissions:
 
 ## Version
 
-Current version: 1.0.0
+Current version: 1.0.1
+
+## Change Log
+
+V1.0.1:
+
+- Added course selection
+- Added start and end date editing
 
 ## Contributing
 

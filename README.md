@@ -37,6 +37,8 @@ V1.0.1:
 
 - Added course selection
 - Added start and end date editing
+- Edited instructions
+- Added compatibility with printable page and weekly calendar format
 
 ## Contributing
 

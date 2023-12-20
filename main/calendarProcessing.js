@@ -1,4 +1,5 @@
 var page_content = null;
+var isPrintablePage = false;
 var classStartDates = [
 	new Date('2024-01-15T00:00:00'),
 	new Date('2024-08-12T00:00:00'),
@@ -265,7 +266,8 @@ function populateCourses() {
 	courses = [];
 	elements = parser.parseFromString(tmp, 'text/html');
 	data = elements.body.innerText.split('\n').filter((n) => n);
-	for (var i = 7; i < data.length - 3; i += 6) {
+	if (data[0] === 'Index') isPrintablePage = true;
+	for (var i = isPrintablePage ? 6 : 7; i < data.length - 3; i += 6) {
 		var index = data[i];
 		var code = data[i + 1];
 		var title = data[i + 2];

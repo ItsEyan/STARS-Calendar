@@ -47,6 +47,10 @@ V1.0.3:
 
 - Added support for single date events and non-standard schedules
 
+V1.0.4:
+
+- Fixed single date event bug
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.

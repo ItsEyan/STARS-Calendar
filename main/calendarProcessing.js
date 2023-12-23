@@ -404,6 +404,13 @@ function readSchedule() {
 							schedules = 'Even Weeks starting from Week 2';
 						} else if (isNumber(courseFreq)) {
 							freq = 0;
+							if (courseFreq <= 7) {
+								startTime = startTime.addDays(7 * (courseFreq - 1));
+								endTime = endTime.addDays(7 * (courseFreq - 1));
+							} else {
+								startTime = startTime.addDays(7 * courseFreq);
+								endTime = endTime.addDays(7 * courseFreq);
+							}
 							schedules = 'Week ' + courseFreq;
 						} else if (courseFreq.split('-').length == 2) {
 							var num1 = courseFreq.split('-')[0];

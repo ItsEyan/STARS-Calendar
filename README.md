@@ -29,7 +29,7 @@ This extension requires the following permissions:
 
 ## Version
 
-Current version: 1.0.1
+Current version: 1.0.4
 
 ## Change Log
 

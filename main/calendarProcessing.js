@@ -71,6 +71,10 @@ for (var i = 0; i < classStartDates.length; i++) {
 	}
 }
 
+function isNumber(n) {
+	return !isNaN(parseInt(n)) && isFinite(n);
+}
+
 class Course {
 	constructor(index, code, title, au, exam) {
 		this.index = index;
@@ -82,6 +86,18 @@ class Course {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+	$('[id="start_date"]').datepicker({
+		date: currentStartDate,
+		format: 'dd/mm/yyyy',
+	});
+	$('[id="start_date"]').datepicker('setDate', currentStartDate);
+
+	$('[id="end_date"]').datepicker({
+		date: currentEndDate,
+		format: 'dd/mm/yyyy',
+		startDate: currentStartDate,
+	});
+	$('[id="end_date"]').datepicker('setDate', currentEndDate);
 	const dragItem = document.getElementById('title-components');
 	sortable = new Sortable(dragItem, {
 		animation: 250,
@@ -141,19 +157,6 @@ document.addEventListener('DOMContentLoaded', function () {
 							document.getElementById('updateText').innerHTML =
 								'Oops! Wrong Site! &#128561;';
 						} else {
-							$('[id="start_date"]').datepicker({
-								date: currentStartDate,
-								format: 'dd/mm/yyyy',
-							});
-							$('[id="start_date"]').datepicker('setDate', currentStartDate);
-
-							$('[id="end_date"]').datepicker({
-								date: currentEndDate,
-								format: 'dd/mm/yyyy',
-								startDate: currentStartDate,
-							});
-							$('[id="end_date"]').datepicker('setDate', currentEndDate);
-
 							if (courses.length == 0) {
 								populateCourses();
 								selectedCourses = [...courses];
@@ -335,17 +338,27 @@ function readSchedule() {
 						continue;
 					var classType = courseData[1];
 					var tutGroup = courseData[2];
-					var courseFreq = 'weekly_1_13';
+					var courseFreq;
 					if (courseData[3]) {
-						if (courseData[3].includes('-Wk2-13')) {
-							courseFreq = 'weekly_2_13';
-							courseData[3] = courseData[3].replace('-Wk2-13', '');
-						} else if (courseData[3].includes('-Wk1,3,5,7,9,11,13')) {
+						if (courseData[3].includes('-Wk1,3,5,7,9,11,13')) {
 							courseFreq = 'odd';
 							courseData[3] = courseData[3].replace('-Wk1,3,5,7,9,11,13', '');
 						} else if (courseData[3].includes('-Wk2,4,6,8,10,12')) {
 							courseFreq = 'even';
 							courseData[3] = courseData[3].replace('-Wk2,4,6,8,10,12', '');
+						} else {
+							var split = courseData[3].split('-Wk');
+							var num = split[1] ? split[1] : '1-13';
+							courseData[3] = split[0];
+							if (isNumber(num)) {
+								courseFreq = num;
+							} else if (num.split('-').length == 2) {
+								var num1 = num.split('-')[0];
+								var num2 = num.split('-')[1];
+								if (isNumber(num1) && isNumber(num2)) {
+									courseFreq = num1 + '-' + num2;
+								}
+							}
 						}
 					}
 					var timingTmp = courseData[3].substring(courseData[3].length - 10); // to get the time which is always the last 10 digits
@@ -365,24 +378,13 @@ function readSchedule() {
 								timing[1].substring(timing[1].length - 2)
 							)
 					).addDays(j - 1);
-					if (courseFreq === 'weekly_2_13' || courseFreq === 'even') {
-						startTime = startTime.addDays(7);
-						endTime = endTime.addDays(7);
-					}
 
 					var course = courses.find((x) => x.code == courseCode);
 					if (course != undefined) {
 						var afterRecessStart, afterRecessEnd;
 						var freq, afterRecessFreq, schedules;
 						var beforeRecessWeek = currentStartDate.addDays(7 * 7 - 1);
-						if (courseFreq === 'weekly_1_13') {
-							freq = 'WEEKLY;UNTIL=' + formatDateToICS(beforeRecessWeek);
-							afterRecessStart = startTime.addDays(7 * 8);
-							afterRecessEnd = endTime.addDays(7 * 8);
-							afterRecessFreq =
-								'WEEKLY;UNTIL=' + formatDateToICS(currentEndDate);
-							schedules = 'Weekly starting from Week 1';
-						} else if (courseFreq === 'odd') {
+						if (courseFreq === 'odd') {
 							freq =
 								'WEEKLY;INTERVAL=2;UNTIL=' + formatDateToICS(beforeRecessWeek);
 							afterRecessStart = startTime.addDays(7 * 9);
@@ -391,6 +393,8 @@ function readSchedule() {
 								'WEEKLY;INTERVAL=2;UNTIL=' + formatDateToICS(currentEndDate);
 							schedules = 'Odd Weeks starting from Week 1';
 						} else if (courseFreq === 'even') {
+							startTime = startTime.addDays(7);
+							endTime = endTime.addDays(7);
 							freq =
 								'WEEKLY;INTERVAL=2;UNTIL=' + formatDateToICS(beforeRecessWeek);
 							afterRecessStart = startTime.addDays(7 * 7);
@@ -398,13 +402,26 @@ function readSchedule() {
 							afterRecessFreq =
 								'WEEKLY;INTERVAL=2;UNTIL=' + formatDateToICS(currentEndDate);
 							schedules = 'Even Weeks starting from Week 2';
-						} else {
+						} else if (isNumber(courseFreq)) {
+							freq = 0;
+							schedules = 'Week ' + courseFreq;
+						} else if (courseFreq.split('-').length == 2) {
+							var num1 = courseFreq.split('-')[0];
+							var num2 = courseFreq.split('-')[1];
+							var padding = num1 <= 7 ? num1 - 1 : num1;
+							startTime = startTime.addDays(7 * padding);
+							endTime = endTime.addDays(7 * padding);
+
+							if (num2 > 7) {
+								afterRecessStart = startTime.addDays(7 * (8 - num1 + 1));
+								afterRecessEnd = endTime.addDays(7 * (8 - num1 + 1));
+								afterRecessFreq =
+									'WEEKLY;UNTIL=' + formatDateToICS(currentEndDate);
+							} else if (num2 < 7) {
+								beforeRecessWeek = startTime.addDays(7 * num2 - 1);
+							}
 							freq = 'WEEKLY;UNTIL=' + formatDateToICS(beforeRecessWeek);
-							afterRecessStart = startTime.addDays(7 * 7);
-							afterRecessEnd = endTime.addDays(7 * 7);
-							afterRecessFreq =
-								'WEEKLY;UNTIL=' + formatDateToICS(currentEndDate);
-							schedules = 'Weekly starting from Week 2';
+							schedules = 'Week ' + num1 + ' to ' + num2;
 						}
 
 						var originalStartTime = startTime;
@@ -426,11 +443,36 @@ function readSchedule() {
 						if (document.getElementById('schedule').checked)
 							description += 'Schedule: ' + schedules + '\\n';
 
+						if (freq === 0) {
+							test += 'BEGIN:VEVENT\n';
+							test += 'SUMMARY:' + summary + '\n';
+							test += 'DTSTART:' + formatDateToICS(startTime) + '\n';
+							test += 'DTEND:' + formatDateToICS(endTime) + '\n';
+							test += 'DTSTAMP:' + formatDateToICS(new Date()) + '\n';
+							test += 'DESCRIPTION:' + description + '\n';
+							test += 'LOCATION:' + location + '\n';
+							test += 'BEGIN:VALARM\n';
+							test += 'TRIGGER:-PT30M\n';
+							test += 'REPEAT:1\n';
+							test += 'ACTION:DISPLAY\n';
+							test += 'END:VALARM\n';
+							test +=
+								'UID:' +
+								courseCode +
+								classType +
+								tutGroup +
+								formatDateToICS(startTime) +
+								'\n';
+							test += 'END:VEVENT\n';
+							continue;
+						}
+
 						for (var l = 0; l < 2; l++) {
 							if (l == 1) {
 								freq = afterRecessFreq;
 								startTime = afterRecessStart;
 								endTime = afterRecessEnd;
+								if (!startTime) continue;
 							}
 
 							test += 'BEGIN:VEVENT\n';

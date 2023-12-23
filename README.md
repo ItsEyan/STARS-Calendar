@@ -43,6 +43,10 @@ V1.0.2:
 - Edited instructions
 - Added compatibility with printable page and weekly calendar format
 
+V1.0.3:
+
+- Added support for single date events and non-standard schedules
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.

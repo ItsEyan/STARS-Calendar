@@ -228,7 +228,7 @@ body {
 	font-size: 0.9em;
 	font-family: sans-serif;
 	min-height: max-content;
-	min-width: max-content;
+	max-width: 300px;
 	box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 

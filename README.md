@@ -50,6 +50,8 @@ V1.0.3:
 V1.0.4:
 
 - Fixed single date event bug
+- Added auto update
+- Added table max width
 
 ## Contributing
 

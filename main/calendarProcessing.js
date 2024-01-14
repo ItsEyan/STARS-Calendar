@@ -568,7 +568,6 @@ function readSchedule() {
 			}
 		}
 	}
-	console.log(schedule);
 	selectedCourses.forEach((course) => {
 		var exam = course.exam;
 		if (exam[0] === 'Not Applicable') return;

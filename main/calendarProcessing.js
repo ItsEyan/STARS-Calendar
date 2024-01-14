@@ -343,6 +343,8 @@ function readSchedule() {
 			});
 		}
 	);
+	var halfHour = false;
+	if (schedule.length > 30) halfHour = true;
 	for (var i = 1; i < schedule.length; i++) {
 		for (var j = 1; j < schedule[i].length; j++) {
 			if (schedule[i][j] != '') {
@@ -410,8 +412,9 @@ function readSchedule() {
 							)
 					).addDays(j - 1);
 					var diff = (endTime.getTime() - startTime.getTime()) / 60000;
-					if (diff > 50 && k == 0) {
-						diff = (diff - 50) / 60;
+					if (k == 0 && (diff > 50 || (diff == 50 && halfHour))) {
+						if (halfHour) diff = (diff - 50) / 30 + 1;
+						else diff = (diff - 50) / 60;
 						for (var l = 0; l < diff; l++) {
 							schedule[i + l + 1].splice(j, 0, '');
 						}
@@ -565,6 +568,7 @@ function readSchedule() {
 			}
 		}
 	}
+	console.log(schedule);
 	selectedCourses.forEach((course) => {
 		var exam = course.exam;
 		if (exam[0] === 'Not Applicable') return;

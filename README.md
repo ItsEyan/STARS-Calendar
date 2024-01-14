@@ -60,6 +60,7 @@ V1.0.5:
 V1.0.6:
 
 - Fixed bug when a specific course was unselected causing dates of other courses to be affected
+- Added support for half hour format
 
 ## Contributing
 

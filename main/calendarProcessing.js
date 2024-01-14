@@ -350,8 +350,6 @@ function readSchedule() {
 				for (var k = 0; k < modList.length; k++) {
 					var courseData = modList[k].split(' ');
 					var courseCode = courseData[0];
-					if (selectedCourses.find((x) => x.code == courseCode) == undefined)
-						continue;
 					var classType = courseData[1];
 					var tutGroup = courseData[2];
 					var courseFreq;
@@ -396,8 +394,6 @@ function readSchedule() {
 						}
 					}
 					location += courseData[courseData.length - 1].replace(timingTmp, '');
-					console.log(courseData);
-					console.log(location);
 					var timing = timingTmp.split('to');
 					var startTime = new Date(
 						currentStartDate.getTime() +
@@ -414,13 +410,14 @@ function readSchedule() {
 							)
 					).addDays(j - 1);
 					var diff = (endTime.getTime() - startTime.getTime()) / 60000;
-					console.log(diff);
-					if (diff > 50) {
+					if (diff > 50 && k == 0) {
 						diff = (diff - 50) / 60;
 						for (var l = 0; l < diff; l++) {
 							schedule[i + l + 1].splice(j, 0, '');
 						}
 					}
+					if (selectedCourses.find((x) => x.code == courseCode) == undefined)
+						continue;
 
 					var course = courses.find((x) => x.code == courseCode);
 					if (course != undefined) {
@@ -568,7 +565,6 @@ function readSchedule() {
 			}
 		}
 	}
-	console.log(schedule);
 	selectedCourses.forEach((course) => {
 		var exam = course.exam;
 		if (exam[0] === 'Not Applicable') return;

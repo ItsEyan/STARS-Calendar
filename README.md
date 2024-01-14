@@ -57,6 +57,10 @@ V1.0.5:
 
 - Fixed bug when location was more than 1 word
 
+V1.0.6:
+
+- Fixed bug when a specific course was unselected causing dates of other courses to be affected
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.

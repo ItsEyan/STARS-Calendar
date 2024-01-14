@@ -53,6 +53,10 @@ V1.0.4:
 - Added auto update
 - Added table max width
 
+V1.0.5:
+
+- Fixed bug when location was more than 1 word
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request.

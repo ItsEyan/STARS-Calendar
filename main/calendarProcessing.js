@@ -61,11 +61,12 @@ function formatDateToICS(date, allDay = false) {
 	const year = date.getFullYear();
 	const month = (date.getMonth() + 1).toString().padStart(2, '0');
 	const day = date.getDate().toString().padStart(2, '0');
+	if (allDay) return `${year}${month}${day}`;
+
 	const hours = date.getHours().toString().padStart(2, '0');
 	const minutes = date.getMinutes().toString().padStart(2, '0');
 	const seconds = date.getSeconds().toString().padStart(2, '0');
 
-	if (allDay) return `${year}${month}${day}`;
 	return `${year}${month}${day}T${hours}${minutes}${seconds}`;
 }
 
@@ -354,17 +355,25 @@ function readSchedule() {
 					var classType = courseData[1];
 					var tutGroup = courseData[2];
 					var courseFreq;
-					if (courseData[3]) {
-						if (courseData[3].includes('-Wk1,3,5,7,9,11,13')) {
+					if (courseData[courseData.length - 1]) {
+						if (
+							courseData[courseData.length - 1].includes('-Wk1,3,5,7,9,11,13')
+						) {
 							courseFreq = 'odd';
-							courseData[3] = courseData[3].replace('-Wk1,3,5,7,9,11,13', '');
-						} else if (courseData[3].includes('-Wk2,4,6,8,10,12')) {
+							courseData[courseData.length - 1] = courseData[
+								courseData.length - 1
+							].replace('-Wk1,3,5,7,9,11,13', '');
+						} else if (
+							courseData[courseData.length - 1].includes('-Wk2,4,6,8,10,12')
+						) {
 							courseFreq = 'even';
-							courseData[3] = courseData[3].replace('-Wk2,4,6,8,10,12', '');
+							courseData[courseData.length - 1] = courseData[
+								courseData.length - 1
+							].replace('-Wk2,4,6,8,10,12', '');
 						} else {
-							var split = courseData[3].split('-Wk');
+							var split = courseData[courseData.length - 1].split('-Wk');
 							var num = split[1] ? split[1] : '1-13';
-							courseData[3] = split[0];
+							courseData[courseData.length - 1] = split[0];
 							if (isNumber(num)) {
 								courseFreq = num;
 							} else if (num.split('-').length == 2) {
@@ -376,8 +385,19 @@ function readSchedule() {
 							}
 						}
 					}
-					var timingTmp = courseData[3].substring(courseData[3].length - 10); // to get the time which is always the last 10 digits
-					var location = courseData[3].replace(timingTmp, '');
+					var timingTmp = courseData[courseData.length - 1].substring(
+						courseData[courseData.length - 1].length - 10
+					); // to get the time which is always the last 10 digits
+
+					var location = '';
+					if (courseData.length > 4) {
+						for (var l = 3; l < courseData.length - 1; l++) {
+							location += courseData[l] + ' ';
+						}
+					}
+					location += courseData[courseData.length - 1].replace(timingTmp, '');
+					console.log(courseData);
+					console.log(location);
 					var timing = timingTmp.split('to');
 					var startTime = new Date(
 						currentStartDate.getTime() +
@@ -393,6 +413,14 @@ function readSchedule() {
 								timing[1].substring(timing[1].length - 2)
 							)
 					).addDays(j - 1);
+					var diff = (endTime.getTime() - startTime.getTime()) / 60000;
+					console.log(diff);
+					if (diff > 50) {
+						diff = (diff - 50) / 60;
+						for (var l = 0; l < diff; l++) {
+							schedule[i + l + 1].splice(j, 0, '');
+						}
+					}
 
 					var course = courses.find((x) => x.code == courseCode);
 					if (course != undefined) {
@@ -540,6 +568,7 @@ function readSchedule() {
 			}
 		}
 	}
+	console.log(schedule);
 	selectedCourses.forEach((course) => {
 		var exam = course.exam;
 		if (exam[0] === 'Not Applicable') return;

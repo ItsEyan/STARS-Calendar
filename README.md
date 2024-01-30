@@ -1,6 +1,6 @@
 # STARSCal
 
-STARSCal is a Chrome extension that allows NTU students to easily export their timetables from the NTU STARS system to their favorite calendar application.
+[STARSCal](https://chromewebstore.google.com/detail/starscal/lfbnkicgaegmaeegonmmakjimcjgfdmd?pli=1) is a Chrome extension that allows NTU students to easily export their timetables from the NTU STARS system to their favorite calendar application.
 
 ## Features
 
